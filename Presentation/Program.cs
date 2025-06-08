@@ -1,18 +1,26 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.EntityFrameworkCore;
+using Presentation.Data;
+using Presentation.Services;
 
+var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<TosServices>();
+builder.Services.AddDbContext<DataContext>(x =>
+    x.UseSqlServer(builder.Configuration.GetConnectionString("TosDatabaseConnection")));
 
 var app = builder.Build();
 
-
-if (app.Environment.IsDevelopment())
-    {
-    app.MapOpenApi();
-    }
-
+app.MapOpenApi();
 app.UseHttpsRedirection();
+app.UseCors(x =>
+{
+    x.AllowAnyOrigin()
+     .AllowAnyMethod()
+     .AllowAnyHeader();
+});
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
